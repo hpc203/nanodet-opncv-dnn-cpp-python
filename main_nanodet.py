@@ -3,13 +3,13 @@ import numpy as np
 import argparse
 
 class my_nanodet():
-    def __init__(self, input_shape=320, reg_max=7, strides=[8, 16, 32], prob_threshold=0.4, iou_threshold=0.3):
+    def __init__(self, input_shape=320, prob_threshold=0.4, iou_threshold=0.3):
         with open('coco.names', 'rt') as f:
             self.classes = f.read().rstrip('\n').split('\n')
         self.num_classes = len(self.classes)
-        self.strides = strides
+        self.strides = (8, 16, 32)
         self.input_shape = (input_shape, input_shape)
-        self.reg_max = reg_max
+        self.reg_max = 7
         self.prob_threshold = prob_threshold
         self.iou_threshold = iou_threshold
         self.project = np.arange(self.reg_max + 1)
@@ -22,7 +22,7 @@ class my_nanodet():
 
         self.mlvl_anchors = []
         for i in range(len(self.strides)):
-            anchors = self._make_grid((int(self.input_shape[0] / strides[i]), int(self.input_shape[1] / strides[i])), strides[i])
+            anchors = self._make_grid((int(self.input_shape[0] / self.strides[i]), int(self.input_shape[1] / self.strides[i])), self.strides[i])
             self.mlvl_anchors.append(anchors)
     def _make_grid(self, featmap_size, stride):
         feat_h, feat_w = featmap_size
