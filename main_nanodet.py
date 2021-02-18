@@ -3,20 +3,23 @@ import numpy as np
 import argparse
 
 class my_nanodet():
-    def __init__(self, input_shape=[320, 320], reg_max=7, strides=[8, 16, 32], prob_threshold=0.4, iou_threshold=0.3):
+    def __init__(self, input_shape=320, reg_max=7, strides=[8, 16, 32], prob_threshold=0.4, iou_threshold=0.3):
         with open('coco.names', 'rt') as f:
             self.classes = f.read().rstrip('\n').split('\n')
         self.num_classes = len(self.classes)
         self.strides = strides
-        self.input_shape = tuple(input_shape)
+        self.input_shape = (input_shape, input_shape)
         self.reg_max = reg_max
         self.prob_threshold = prob_threshold
         self.iou_threshold = iou_threshold
         self.project = np.arange(self.reg_max + 1)
         self.mean = np.array([103.53, 116.28, 123.675], dtype=np.float32).reshape(1, 1, 3)
         self.std = np.array([57.375, 57.12, 58.395], dtype=np.float32).reshape(1, 1, 3)
-        self.net = cv2.dnn.readNet('nanodet.onnx')
-        
+        if input_shape==320:
+            self.net = cv2.dnn.readNet('nanodet.onnx')
+        else:
+            self.net = cv2.dnn.readNet('nanodet_m.onnx')
+
         self.mlvl_anchors = []
         for i in range(len(self.strides)):
             anchors = self._make_grid((int(self.input_shape[0] / strides[i]), int(self.input_shape[1] / strides[i])), strides[i])
@@ -87,6 +90,8 @@ class my_nanodet():
         mlvl_bboxes = []
         mlvl_scores = []
         for stride, cls_score, bbox_pred, anchors in zip(self.strides, cls_scores, bbox_preds, self.mlvl_anchors):
+            cls_score = cls_score.squeeze()
+            bbox_pred = bbox_pred.squeeze()
             bbox_pred = self.softmax(bbox_pred.reshape(-1, self.reg_max + 1), axis=1)
             # bbox_pred = np.sum(bbox_pred * np.expand_dims(self.project, axis=0), axis=1).reshape((-1, 4))
             bbox_pred = np.dot(bbox_pred, self.project).reshape(-1,4)
@@ -149,12 +154,13 @@ class my_nanodet():
 if __name__=='__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--imgpath', type=str, default='street.png', help="image path")
+    parser.add_argument('--input_shape', default=320, type=int, choices=[320, 416], help='input image shape')
     parser.add_argument('--confThreshold', default=0.35, type=float, help='class confidence')
     parser.add_argument('--nmsThreshold', default=0.6, type=float, help='nms iou thresh')
     args = parser.parse_args()
 
     srcimg = cv2.imread(args.imgpath)
-    net = my_nanodet(prob_threshold=args.confThreshold, iou_threshold=args.nmsThreshold)
+    net = my_nanodet(input_shape=args.input_shape, prob_threshold=args.confThreshold, iou_threshold=args.nmsThreshold)
     import time
     a = time.time()
     srcimg = net.detect(srcimg)

@@ -4,6 +4,7 @@
 #include <opencv2/dnn.hpp>
 #include <opencv2/imgproc.hpp>
 #include <opencv2/highgui.hpp>
+#include <assert.h>
 
 using namespace cv;
 using namespace dnn;
@@ -12,13 +13,13 @@ using namespace std;
 class NanoDet
 {
 	public:
-		NanoDet(float confThreshold, float nmsThreshold);
+		NanoDet(int input_shape, float confThreshold, float nmsThreshold);
 		void detect(Mat& srcimg);
 
 	private:
 		const int stride[3] = { 8, 16, 32 };
 		const string classesFile = "coco.names";
-		const int input_shape[2] = { 320,320 };   //// height, width
+		int input_shape[2];   //// height, width
 		const float mean[3] = { 103.53, 116.28, 123.675 };
 		const float std[3] = { 57.375, 57.12, 58.395 };
 		const int reg_max = 7;
@@ -36,8 +37,11 @@ class NanoDet
 		const bool keep_ratio = true;
 };
 
-NanoDet::NanoDet(float confThreshold, float nmsThreshold)
+NanoDet::NanoDet(int input_shape, float confThreshold, float nmsThreshold)
 {
+    assert(input_shape==320 || input_shape==416);
+    this->input_shape[0] = input_shape;
+    this->input_shape[1] = input_shape;
 	this->prob_threshold = confThreshold;
 	this->iou_threshold = nmsThreshold;
 
@@ -45,7 +49,14 @@ NanoDet::NanoDet(float confThreshold, float nmsThreshold)
 	string line;
 	while (getline(ifs, line)) this->classes.push_back(line);
     this->num_class = this->classes.size();
-	this->net = readNet("nanodet.onnx");
+    if(input_shape==320)
+    {
+        this->net = readNet("nanodet.onnx");
+    }
+	else
+    {
+        this->net = readNet("nanodet_m.onnx");
+    }
 }
 
 Mat NanoDet::resize_image(Mat srcimg, int* newh, int* neww, int* top, int* left)
@@ -144,6 +155,15 @@ void NanoDet::generate_proposal(vector<int>& classIds, vector<float>& confidence
     const int num_grid_y = (int)this->input_shape[0]/stride_;
     const int num_grid_x = (int)this->input_shape[1]/stride_;
     const int reg_1max = this->reg_max + 1;
+
+    if(out_score.dims==3)
+    {
+        out_score = out_score.reshape(0, num_grid_x*num_grid_y);
+    }
+    if(out_box.dims==3)
+    {
+        out_box = out_box.reshape(0, num_grid_x*num_grid_y);
+    }
     for (int i = 0; i < num_grid_y; i++)
     {
         for (int j = 0; j < num_grid_x; j++)
@@ -225,7 +245,7 @@ void NanoDet::post_process(vector<Mat> outs, Mat& frame, int newh, int neww, int
 
 int main()
 {
-	NanoDet nanonet(0.35, 0.6);
+	NanoDet nanonet(416, 0.35, 0.6);
 
 	string imgpath = "street.png";
 	Mat srcimg = imread(imgpath);
