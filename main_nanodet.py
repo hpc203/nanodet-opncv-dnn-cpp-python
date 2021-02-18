@@ -13,15 +13,14 @@ class my_nanodet():
         self.prob_threshold = prob_threshold
         self.iou_threshold = iou_threshold
         self.project = np.arange(self.reg_max + 1)
-
-        self.mlvl_anchors = []
-        for i in range(len(self.strides)):
-            anchors = self._make_grid((int(input_shape[0] / strides[i]), int(input_shape[1] / strides[i])), strides[i])
-            self.mlvl_anchors.append(anchors)
-
         self.mean = np.array([103.53, 116.28, 123.675], dtype=np.float32).reshape(1, 1, 3)
         self.std = np.array([57.375, 57.12, 58.395], dtype=np.float32).reshape(1, 1, 3)
         self.net = cv2.dnn.readNet('nanodet.onnx')
+        
+        self.mlvl_anchors = []
+        for i in range(len(self.strides)):
+            anchors = self._make_grid((int(self.input_shape[0] / strides[i]), int(self.input_shape[1] / strides[i])), strides[i])
+            self.mlvl_anchors.append(anchors)
     def _make_grid(self, featmap_size, stride):
         feat_h, feat_w = featmap_size
         shift_x = np.arange(0, feat_w) * stride
