@@ -106,6 +106,14 @@ void NanoDet::normalize(Mat& img)
 			pdata[2] = (pdata[2] - this->mean[2]) / this->std[2];
 			pdata += 3;
 		}
+
+//        float* pdata = img.ptr<float>(i);
+//        for(j = 0; j < img.cols; j++)
+//        {
+//            pdata[3 * j] = (pdata[3 * j] - this->mean[0]) / this->std[0];
+//            pdata[3 * j + 1] = (pdata[3 * j + 1] - this->mean[1]) / this->std[1];
+//            pdata[3 * j + 2] = (pdata[3 * j + 2] - this->mean[2]) / this->std[2];
+//        }
 	}
 }
 
