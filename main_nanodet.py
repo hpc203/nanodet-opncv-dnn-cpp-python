@@ -121,10 +121,14 @@ class my_nanodet():
         confidences = np.max(mlvl_scores, axis=1)  ####max_class_confidence
 
         indices = cv2.dnn.NMSBoxes(bboxes_wh.tolist(), confidences.tolist(), self.prob_threshold, self.iou_threshold)
-        mlvl_bboxes = mlvl_bboxes[indices[:, 0]]
-        confidences = confidences[indices[:, 0]]
-        classIds = classIds[indices[:, 0]]
-        return mlvl_bboxes, confidences, classIds
+        if len(indices)>0:
+            mlvl_bboxes = mlvl_bboxes[indices[:, 0]]
+            confidences = confidences[indices[:, 0]]
+            classIds = classIds[indices[:, 0]]
+            return mlvl_bboxes, confidences, classIds
+        else:
+            print('no detect')
+            return np.array([]), np.array([]), np.array([])
     def distance2bbox(self, points, distance, max_shape=None):
         x1 = points[:, 0] - distance[:, 0]
         y1 = points[:, 1] - distance[:, 1]
