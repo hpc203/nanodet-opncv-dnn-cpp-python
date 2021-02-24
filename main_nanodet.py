@@ -127,7 +127,7 @@ class my_nanodet():
             classIds = classIds[indices[:, 0]]
             return mlvl_bboxes, confidences, classIds
         else:
-            print('no detect')
+            print('nothing detect')
             return np.array([]), np.array([]), np.array([])
     def distance2bbox(self, points, distance, max_shape=None):
         x1 = points[:, 0] - distance[:, 0]
