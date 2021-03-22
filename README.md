@@ -9,4 +9,4 @@ python版本的主程序是main_nanodet.py， c++版本的主程序是main.cpp
 程序里提供输入图片尺寸320和416这两种选择，类别置信度阈值confThreshold，nms重叠率阈值nmsThreshold可自行调整
 
 nanodet的后处理模块的解读，可以参阅我写的csdn博客文章
-https://blog.csdn.net/nihate/article/details/113850913#comments_15084984
+https://blog.csdn.net/nihate/article/details/113850913
