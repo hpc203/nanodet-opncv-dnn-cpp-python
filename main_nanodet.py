@@ -92,7 +92,7 @@ class my_nanodet():
         for stride, cls_score, bbox_pred, anchors in zip(self.strides, cls_scores, bbox_preds, self.mlvl_anchors):
             if cls_score.ndim==3:
                 cls_score = cls_score.squeeze(axis=0)
-            if cls_score.ndim==3:
+            if bbox_pred.ndim==3:
                 bbox_pred = bbox_pred.squeeze(axis=0)
             bbox_pred = self.softmax(bbox_pred.reshape(-1, self.reg_max + 1), axis=1)
             # bbox_pred = np.sum(bbox_pred * np.expand_dims(self.project, axis=0), axis=1).reshape((-1, 4))
