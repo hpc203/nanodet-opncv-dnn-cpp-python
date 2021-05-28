@@ -18,7 +18,7 @@ class NanoDet
 
 	private:
 		const int stride[3] = { 8, 16, 32 };
-		const string classesFile = "coco.names";
+		const string classesFile = "coco.names";   ////这个是存放COCO数据集的类名，如果你是用自己数据集训练的，那么需要修改
 		int input_shape[2];   //// height, width
 		const float mean[3] = { 103.53, 116.28, 123.675 };
 		const float std[3] = { 57.375, 57.12, 58.395 };
@@ -255,7 +255,7 @@ int main()
 {
 	NanoDet nanonet(416, 0.35, 0.6);
 
-	string imgpath = "street.png";
+	string imgpath = "street.png";  ///输入图片的路径，你也可以改成外部传参argv的方式，或者是读取视频文件
 	Mat srcimg = imread(imgpath);
 	nanonet.detect(srcimg);
 
